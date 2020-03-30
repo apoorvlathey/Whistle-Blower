@@ -10,6 +10,7 @@ contract whistleblower {
     }
     
     struct Org {
+        uint id;
         address addr;
         string name;
         uint8 otype;     // 0=news/journalist || 1=activists/NGO || 2=lawyers
@@ -17,6 +18,7 @@ contract whistleblower {
     }
     
     struct Case {
+        uint id;
         string title;
         string desc;
         address org;
@@ -31,13 +33,13 @@ contract whistleblower {
     }
     
     function registerOrg(string memory _name, uint8 _type, string memory _url, address _orgAddr) public onlyOwner {
-        Org memory o = Org(_orgAddr, _name, _type, _url);
+        Org memory o = Org(orgs.length,_orgAddr, _name, _type, _url);
         orgs.push(o);
     }
     
     function addCase(string memory _title, string memory _desc, uint _orgId, string memory _proof) public {
         require(orgs[_orgId].addr != address(0));
-        Case memory c = Case(_title, _desc, orgs[_orgId].addr, _proof, 0);
+        Case memory c = Case(cases.length, _title, _desc, orgs[_orgId].addr, _proof, 0);
         cases.push(c);
     }
     
@@ -52,7 +54,7 @@ contract whistleblower {
         if(_isValid) {
             cases[_caseId].validity = 1;
         } else {
-            cases[_caseId].validity = 0;
+            cases[_caseId].validity = 2;
         }
     }
 }
