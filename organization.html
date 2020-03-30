@@ -81,6 +81,48 @@
           <span></span>
         </div>
       </div>
+      <div class="header-nav" id="header-menu">
+        <div class="nav-right">
+          <div class="nav-item">
+            <a class="smoothScroll" href="./pendingclaims.html">
+              <span class="icon">
+                <i class="fas fa-wrapper fa-clock small"></i>
+              </span>
+              Pending Claims
+            </a>
+          </div>
+          <div class="nav-item has-sub" style="padding: 0.5rem;">
+            <div class="list-dropdown dropdown-right">
+              <div class="btn-group">
+                <button class="btn-success u-no-padding">
+                  <a
+                    class="font-normal"
+                    href="./whistleblower.html"
+                    target=""
+                  >
+                    <span style="color: white;">Login (WhistleBlower)</span>
+                  </a>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="nav-item has-sub" style="padding: 0.5rem;">
+            <div class="list-dropdown dropdown-right">
+              <div class="btn-group">
+                <button class="btn-success u-no-padding">
+                  <a
+                    class="font-normal"
+                    href="./organization.html"
+                    target=""
+                  >
+                    <span style="color: white;">Login (Organization)</span>
+                  </a>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="hero fullscreen">
@@ -103,9 +145,7 @@
                   </tr>
                 </thead>
 
-                <tbody id="newCasesTable">
-                  
-                </tbody>
+                <tbody id="newCasesTable"></tbody>
               </table>
             </div>
           </div>
@@ -194,6 +234,11 @@
             name: "cases",
             outputs: [
               {
+                internalType: "uint256",
+                name: "id",
+                type: "uint256"
+              },
+              {
                 internalType: "string",
                 name: "title",
                 type: "string"
@@ -264,6 +309,11 @@
             ],
             name: "orgs",
             outputs: [
+              {
+                internalType: "uint256",
+                name: "id",
+                type: "uint256"
+              },
               {
                 internalType: "address",
                 name: "addr",
@@ -355,41 +405,53 @@
             type: "function"
           }
         ],
-        "0xAC4F3A70CaEbDBBC291a389f033B4416040D3D5f"
+        "0xaD2eE7096E49ce85e491EC54e7F302515F72d8AF"
       );
 
       var orgaddrs = [];
       var orgid;
-      contract.methods.getOrgCount().call((err, l) => {
-        var i = 0;
-        for (; i < l; i++) {
-          var flag = 0;
-          contract.methods.orgs(i).call((err, res) => {
-            if (res.addr == web3.eth.defaultAccount) {
-              // $(".hero")[0].style.display = "";
-              flag = 1;
-            } else {
-              // $(".hero")[0].style.display = "none"
-            }
-          });
-          if (flag == 1) break;
-        }
-        orgid = i - 1;
-        $("#orgid").html(orgid);
-        console.log(orgid, "ORG IDDDD");
-      });
+      contract.methods
+        .getOrgCount()
+        .call()
+        .then(function(l) {
+          var i = 0;
+          for (; i < l; i++) {
+            var flag = 0;
+            contract.methods
+              .orgs(i)
+              .call()
+              .then(function(res) {
+                if (res.addr == web3.eth.defaultAccount) {
+                  // $(".hero")[0].style.display = "";
+                  flag = 1;
+                } else {
+                  // $(".hero")[0].style.display = "none"
+                }
+              });
+            if (flag == 1) break;
+          }
+          orgid = i - 1;
+          $("#orgid").html(orgid);
+          console.log(orgid, "ORG IDDDD");
+        });
 
       var newcases = [];
       var pastcases = [];
-      contract.methods.getCaseCount().call((err, l) => {
-        for (var i = 0; i < l; i++) {
-          contract.methods.cases(i).call((err, res) => {
-            if (res.org == web3.eth.defaultAccount && res.validity == 0) {
-              newcases.push(res);
-              $("#newCasesTable").html(
-                $("#newCasesTable").html() +
-                  `<tr>
-                    <th>${i - 1}</th>
+      contract.methods
+        .getCaseCount()
+        .call()
+        .then(function(l) {
+          for (var i = 0; i < l; i++) {
+            contract.methods
+              .cases(i)
+              .call()
+              .then(function(res) {
+                if (res.org == web3.eth.defaultAccount && res.validity == 0) {
+                  newcases.push(res);
+                  $("#newCasesTable").html(
+                    $("#newCasesTable").html() +
+                      `<tr>
+                    <<th>${res.id}</th>
                     <th>${res.title}</th>
                     <td>
                       ${res.desc}
@@ -400,17 +462,22 @@
                       }' target="_blank">Proof</a>
                     </td>
                     <td>
-                      <span onclick="vProof(${i - 1}, 1);" style="cursor: pointer">✔️</span>
-                      <span onclick="vProof(${i - 1}, 0);" style="cursor: pointer">❌</span>
+                      <span onclick="vProof(${i -
+                        1}, 1);" style="cursor: pointer">✔️</span>
+                      <span onclick="vProof(${i -
+                        1}, 0);" style="cursor: pointer">❌</span>
                     </td>
                   </tr>`
-              );
-            } else if (res.addr == web3.eth.defaultAccount && validity == 1) {
-              pastcases.push(res);
-              $("pastCasesTable").html(
-                $("pastCasesTable").html() +
-                  `<tr>
-                    <th>${i - 1}</th>
+                  );
+                } else if (
+                  res.addr == web3.eth.defaultAccount &&
+                  validity == 1
+                ) {
+                  pastcases.push(res);
+                  $("pastCasesTable").html(
+                    $("pastCasesTable").html() +
+                      `<tr>
+                    <th>${res.id}</th>
                     <th>${res.title}</th>
                     <td>
                       ${res.desc}
@@ -421,11 +488,11 @@
                       }' target="_blank">Proof</a>
                     </td>
                   </tr>`
-              );
-            }
-          });
-        }
-      });
+                  );
+                }
+              });
+          }
+        });
       console.log(newcases, "KKKK");
 
       function vProof(i, t) {

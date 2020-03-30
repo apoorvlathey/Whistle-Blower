@@ -27,8 +27,6 @@
     <script src="./js/web3.min.js"></script>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
-    <script src="https://unpkg.com/ipfs-http-client@30.1.3/dist/index.js"></script>
-    <script src="https://bundle.run/buffer@5.2.1"></script>
   </head>
   <body>
     <div id="header" class="header header-top header-fixed unselectable">
@@ -128,17 +126,42 @@
         <div class="col-6 u-no-padding level">
           <div class="u-text-left w-100">
             <div class="content">
-              <h4>Add New Case!</h4>
+              <h4>Add New Organization</h4>
 
               <div class="divider"></div>
 
               <div class="form-section changeInput">
-                <label class="font-semibold">Title:</label>
+                <label class="font-semibold">Name:</label>
                 <div class="input-control">
                   <input
                     class="input-contains-icon"
-                    id="title"
-                    name="title"
+                    id="name"
+                    name="name"
+                    placeholder=""
+                    type="text"
+                    value=""
+                  />
+                </div>
+              </div>
+
+              <div class="form-section">
+                <label class="font-semibold">Type:</label>
+                <div class="input-control">
+                  <select id="type" name="type">
+                    <option value="0">Journalism</option>
+                    <option value="1">NGO/Activist</option>
+                    <option value="2">Lawyer</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-section changeInput">
+                <label class="font-semibold">URL:</label>
+                <div class="input-control">
+                  <input
+                    class="input-contains-icon"
+                    id="url"
+                    name="url"
                     placeholder=""
                     type="text"
                     value=""
@@ -147,37 +170,16 @@
               </div>
 
               <div class="form-section changeInput">
-                <label class="font-semibold">Description:</label>
+                <label class="font-semibold">Eth Address:</label>
                 <div class="input-control">
                   <input
                     class="input-contains-icon"
-                    id="desc"
-                    name="desc"
+                    id="orgAddr"
+                    name="orgAddr"
                     placeholder=""
                     type="text"
                     value=""
                   />
-                </div>
-              </div>
-
-              <div class="form-section changeInput">
-                <label class="font-semibold">Organization Id:</label>
-                <div class="input-control">
-                  <input
-                    class="input-contains-icon"
-                    id="orgid"
-                    name="orgid"
-                    placeholder=""
-                    type="text"
-                    value=""
-                  />
-                </div>
-              </div>
-
-              <div class="form-section changeInput">
-                <label class="font-semibold">Proof:</label>
-                <div class="input-control">
-                  <input type="file" id="upload" />
                 </div>
               </div>
 
@@ -459,57 +461,27 @@
         "0xaD2eE7096E49ce85e491EC54e7F302515F72d8AF"
       );
 
-      var ipfshash;
-      const ipfs = window.IpfsHttpClient("ipfs.infura.io", "5001", {
-        protocol: "https"
-      });
-
-      $("#upload").on("change", function() {
-        $("#create").css("background", "grey");
-        $("#create").addClass(
-          "animated loading u-center loading-right loading-white"
-        );
-        $("#create").text("Uploading");
-        var reader = new FileReader();
-        reader.onload = function(e) {
-          const magic_array_buffer_converted_to_buffer = buffer.Buffer(
-            reader.result
-          ); // honestly as a web developer I do not fully appreciate the difference between buffer and arrayBuffer
-          ipfs.add(magic_array_buffer_converted_to_buffer, (err, result) => {
-            console.log(err, result);
-
-            ipfshash = result[0].hash;
-            $("#create").removeClass(
-              "animated loading u-center loading-right loading-white"
-            );
-            $("#create").css("background", "var(--cirrus-success)");
-            $("#create").text("CREATE");
-          });
-        };
-        reader.readAsArrayBuffer(this.files[0]);
-      });
-
       $(document).ready(function() {
         $("#create").click(function() {
           $("#create").addClass(
             "animated loading u-center loading-right loading-white"
           );
 
-          var title = $("#title").val();
-          var desc = $("#desc").val();
-          var orgid = $("#orgid").val();
-          proof = ipfshash;
+          var name = $("#name").val();
+          var type = $("#type").val();
+          var url = $("#url").val();
+          var orgAddr = $("#orgAddr").val();
 
           contract.methods
-            .addCase(title, desc, orgid, proof)
+            .registerOrg(name, type, url, orgAddr)
             .send({ from: web3.eth.defaultAccount })
             .then(r => {
-              contract.methods.getCaseCount().call((err, caseno) => {
+              contract.methods.getOrgCount().call((err, orgno) => {
                 $("#create").removeClass(
                   "animated loading u-center loading-right loading-white"
                 );
-                $("#create").text("CASENO is: " + (caseno - 1));
-                console.log(caseno, "CASENO");
+                $("#create").text("ORGNO is: " + (orgno - 1));
+                console.log(caseno, "ORGNO");
               });
             });
         });

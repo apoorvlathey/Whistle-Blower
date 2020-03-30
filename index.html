@@ -83,6 +83,19 @@
       </div>
       <div class="header-nav" id="header-menu">
         <div class="nav-right">
+          <div class="nav-item">
+            <a class="smoothScroll" href="./admin.html">
+              Admin
+            </a>
+          </div>
+          <div class="nav-item">
+            <a class="smoothScroll" href="./pendingclaims.html">
+              <span class="icon">
+                <i class="fas fa-wrapper fa-clock small"></i>
+              </span>
+              Pending Claims
+            </a>
+          </div>
           <div class="nav-item has-sub" style="padding: 0.5rem;">
             <div class="list-dropdown dropdown-right">
               <div class="btn-group">
@@ -90,7 +103,7 @@
                   <a
                     class="font-normal"
                     href="./whistleblower.html"
-                    target="_blank"
+                    target=""
                   >
                     <span style="color: white;">Login (WhistleBlower)</span>
                   </a>
@@ -105,7 +118,7 @@
                   <a
                     class="font-normal"
                     href="./organization.html"
-                    target="_blank"
+                    target=""
                   >
                     <span style="color: white;">Login (Organization)</span>
                   </a>
@@ -116,27 +129,25 @@
         </div>
       </div>
     </div>
-    <div class="hero fullscreen" style="margin-top: -1.5em;">
+    <div class="hero fullscreen">
       <div class="row u-no-padding">
         <div class="col-12 u-no-padding level">
           <div class="u-text-left w-100">
-            <div class="content">
+            <div class="content" style="margin-top: 4.5em;">
               <h4>Recent WhistleBlowing Cases</h4>
 
               <div class="divider"></div>
-              <div class="row" id="recCases">
-                
-              </div>
+              <div class="row" id="recCases"></div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="hero fullscreen" style="margin-top: -25em;">
+    <div class="hero fullscreen">
       <div class="row u-no-padding">
         <div class="col-12 u-no-padding level">
-          <div class="u-text-left w-100">
+          <div class="u-text-left w-100" style="margin-top: -29em;">
             <div class="content">
               <h4>Organizations</h4>
 
@@ -149,12 +160,11 @@
                     <th>Name</th>
                     <th>Type</th>
                     <th>Link</th>
+                    <th>Eth Address</th>
                   </tr>
                 </thead>
 
-                <tbody id="tbody">
-                  
-                </tbody>
+                <tbody id="tbody"></tbody>
               </table>
             </div>
           </div>
@@ -242,6 +252,11 @@
             name: "cases",
             outputs: [
               {
+                internalType: "uint256",
+                name: "id",
+                type: "uint256"
+              },
+              {
                 internalType: "string",
                 name: "title",
                 type: "string"
@@ -312,6 +327,11 @@
             ],
             name: "orgs",
             outputs: [
+              {
+                internalType: "uint256",
+                name: "id",
+                type: "uint256"
+              },
               {
                 internalType: "address",
                 name: "addr",
@@ -403,17 +423,18 @@
             type: "function"
           }
         ],
-        "0xAC4F3A70CaEbDBBC291a389f033B4416040D3D5f"
+        "0xaD2eE7096E49ce85e491EC54e7F302515F72d8AF"
       );
 
       var recentCases = [];
       contract.methods.getCaseCount().call((err, l) => {
         for (var i = 0; i < l; i++) {
           contract.methods.cases(i).call((err, res) => {
-            if (res.validity == 1){
+            if (res.validity == 1) {
               recentCases.push(res);
-              $("#recCases").html($("#recCases").html() + 
-              `<div class="col-4">
+              $("#recCases").html(
+                $("#recCases").html() +
+                  `<div class="col-4" style="margin-top: 1em;">
                   <div class="card u-flex u-flex-column h-100">
                     <div class="content">
                       <div class="tile">
@@ -431,28 +452,45 @@
                     </div>
                   </div>
                 </div>`
-              )
+              );
             }
           });
         }
       });
       console.log(recentCases, "KKKK");
       var orgs = [];
-      contract.methods.getOrgCount().call((err, l) => {
-        for (var i = 0; i < l; i++) {
-          contract.methods.orgs(i).call((err, res) => {
-            orgs.push(res);
-            $("#tbody").html($("#tbody").html()+
-            `<tr>
-                    <th>${i-1}</th>
+      contract.methods
+        .getOrgCount()
+        .call()
+        .then(function(l) {
+          for (var i = 0; i < l; i++) {
+            contract.methods
+              .orgs(i)
+              .call()
+              .then(function(res) {
+                console.log(res, "resss");
+                var thtml = $("#tbody").html();
+                $("#tbody").html("");
+                $("#tbody").html(
+                  thtml +
+                    `<tr>
+                    <th>${res.id}</th>
                     <th>${res.name}</th>
-                    <td>${(res.otype == 0) ? 'Journalism' : (res.otype == 1) ? 'NGO/Activist' : 'Lawyer'}</td>
+                    <td>${
+                      res.otype == 0
+                        ? "Journalism"
+                        : res.otype == 1
+                        ? "NGO/Activist"
+                        : "Lawyer"
+                    }</td>
                     <td><a href="${res.url}" target="_blank">Click</a></td>
+                    <td>${res.addr}</td>
                   </tr>`
-            );
-          });
-        }
-      });
+                );
+                orgs.push(res);
+              });
+          }
+        });
       console.log(orgs, "OORRRGGGSS");
     </script>
   </body>
